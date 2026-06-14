@@ -358,7 +358,7 @@
             <span style="font-size:7px; color:#80deea; letter-spacing:1px; opacity:0.75;">✦ EARLY ACCESS ✦</span><br>
             <span style="font-size:6px; color:#555; letter-spacing:0.5px;">Feedback? Oben links drücken! :)</span>
         </div>
-        <div class="version-text" id="versionText" onclick="_devTap()" style="cursor:default;">by Maddin 2026 - v0.550 (V5)</div>
+        <div class="version-text" id="versionText" onclick="_devTap()" style="cursor:default;">by Maddin 2026 - v0.559 (V5)</div>
     </div>
 
     <div id="uiVariantSelect" class="overlay" style="justify-content:center; padding-top:0; padding-bottom:0; overflow-y:auto; -webkit-overflow-scrolling:touch; touch-action:pan-y;">
@@ -748,17 +748,17 @@
         </div>
     </div>
 
-    <div id="uiGameOver" class="overlay">
-        <div class="overlay-box" style="width:92%; max-width:320px; padding: 16px 18px 14px; max-height:88vh; overflow-y:auto; -webkit-overflow-scrolling:touch; touch-action:pan-y;">
-            <h2 style="color: #f44336; margin-bottom:4px;">Game Over</h2>
-            <div id="gameOverTip" style="font-size:7px; color:#80cbc4; margin-bottom:8px; letter-spacing:0.3px;"></div>
-            <div id="gameOverStats" style="font-size:9px; color:#fff; line-height:2.0; margin-bottom:8px; text-align:center;"></div>
-            <div id="gameOverDiscoveries" style="font-size:8px; color:#80deea; line-height:1.8; margin-bottom:8px; text-align:center; max-height:60px; overflow:hidden;"></div>
-            <div id="gameOverNextGoal" style="font-size:8px; color:#ccc; line-height:1.7; margin-bottom:10px; text-align:center; background:rgba(0,0,0,0.35); border:1px solid rgba(128,222,234,0.3); border-radius:4px; padding:7px 10px;"></div>
-            <p style="font-size: 8px; color: #aaa; margin-bottom: 6px;">Wie war dein Spiel?</p>
+    <div id="uiGameOver" class="overlay" style="background:#040c1e; justify-content:center; align-items:center; padding:12px;">
+        <div class="overlay-box" style="width:96%; max-width:340px; max-height:92vh; overflow-y:auto; -webkit-overflow-scrolling:touch; touch-action:pan-y; padding:14px 16px 12px; margin-bottom:0; display:flex; flex-direction:column; align-items:center; text-align:center;">
+            <h2 style="color:#f44336; margin-bottom:2px; margin-top:0;">Game Over</h2>
+            <div id="gameOverTip" style="font-size:7px; color:#80cbc4; margin-bottom:6px; letter-spacing:0.3px;"></div>
+            <div id="gameOverStats" style="font-size:9px; color:#fff; line-height:1.6; margin-bottom:6px; text-align:center; width:100%;"></div>
+            <div id="gameOverDiscoveries" style="font-size:8px; color:#80deea; line-height:1.6; margin-bottom:5px; text-align:center; max-height:48px; overflow:hidden; width:100%;"></div>
+            <div id="gameOverNextGoal" style="font-size:8px; color:#ccc; line-height:1.6; margin-bottom:7px; text-align:center; background:rgba(0,0,0,0.35); border:1px solid rgba(128,222,234,0.3); border-radius:4px; padding:5px 10px; width:100%;"></div>
+            <p style="font-size:8px; color:#aaa; margin-bottom:5px;">Wie war dein Spiel?</p>
             <div class="emoji-grid" id="emojiGridContainer"></div>
             <input type="text" id="playerName" placeholder="Dein Name" maxlength="9" oninput="this.value = this.value.toUpperCase(); validateName();" />
-            <p id="nameHint" style="font-size:8px; color:#e53935; margin: -4px 0 8px;">Name erforderlich</p>
+            <p id="nameHint" style="font-size:8px; color:#e53935; margin:-4px 0 6px;">Name erforderlich</p>
             <div style="display:flex; gap:6px; width:100%; justify-content:center;">
                 <button class="btn btn-small btn-random" style="flex:1; padding:10px 8px;" onclick="restartFromGameOver()">Nochmal</button>
                 <button id="saveBtn" class="btn btn-small" style="flex:1; padding:10px 8px;" onclick="saveScoreAndExit()" disabled>Speichern</button>
@@ -1251,16 +1251,16 @@
     // ══ Ascension-System (optionale Schwierigkeitsstufen für Veteranen) ══
     // Freischalten: nach erstem W100-Sieg A1; jede weitere durch W100 auf der aktuell höchsten Stufe.
     const ASCENSION_LEVELS = [
-        { desc: 'Start nur mit 7 Schild',    apply: m => { m.startShieldAbs = 7; } },
-        { desc: 'Gegner +20% Tempo',         apply: m => { m.enemySpeed *= 1.20; } },
-        { desc: 'Bosse +25% Leben',          apply: m => { m.bossHp *= 1.25; } },
-        { desc: 'Mehr Giganten ab W51',      apply: m => { m.giantChanceAdd += 0.15; m.giantFromWave = 51; } },
-        { desc: 'Start nur 1 Reroll',        apply: m => { m.rerollAbs = 1; } }
+        { desc: 'Start 7 Schild · Gegner +8% HP',              apply: m => { m.startShieldAbs = 7; m.enemyHp *= 1.08; } },
+        { desc: 'Gegner +25% Tempo · Affixe ab W90',           apply: m => { m.enemySpeed *= 1.25; m.affixFromWave = Math.min(m.affixFromWave, 90); } },
+        { desc: 'Bosse +40% Leben · Gegner +10% HP · mehr Spawns', apply: m => { m.bossHp *= 1.40; m.enemyHp *= 1.10; m.spawnRateMult *= 0.92; } },
+        { desc: 'Viele Giganten ab W31 · Affixe ab W70',       apply: m => { m.giantChanceAdd += 0.20; m.giantFromWave = 31; m.affixFromWave = Math.min(m.affixFromWave, 70); } },
+        { desc: '0 Rerolls · Gegner +15% HP · noch mehr Spawns', apply: m => { m.rerollAbs = 0; m.enemyHp *= 1.15; m.spawnRateMult *= 0.90; } }
     ];
     function getAscensionMods(level) {
-        let m = { enemyHp:1, enemySpeed:1, bossHp:1, startShieldDelta:0, rerollDelta:0, startShieldAbs:null, rerollAbs:null, giantChanceAdd:0, giantFromWave:100, affixFromWave:110, scoreMult:1 };
+        let m = { enemyHp:1, enemySpeed:1, bossHp:1, startShieldDelta:0, rerollDelta:0, startShieldAbs:null, rerollAbs:null, giantChanceAdd:0, giantFromWave:100, affixFromWave:110, spawnRateMult:1, scoreMult:1 };
         for (let i = 0; i < level && i < ASCENSION_LEVELS.length; i++) ASCENSION_LEVELS[i].apply(m);
-        m.scoreMult = Math.min(1 + level * 0.10, 1.5); // +10% pro Stufe, max 1.5×
+        m.scoreMult = 1 + level * 0.20; // ×1.2 / ×1.4 / ×1.6 / ×1.8 / ×2.0
         return m;
     }
     let ascensionUnlocked = 0;   // höchste freigeschaltete Stufe (0 = nur Normal)
@@ -1517,6 +1517,7 @@
             else { enemySpeedBase *= 1.017; enemySpawnRate *= 0.955; }
         }
         if (enemySpawnRate < 0.55) enemySpawnRate = 0.55;
+        if (ascMods.spawnRateMult !== 1) enemySpawnRate *= ascMods.spawnRateMult;
         // Build anwenden (Level VOR Action hochzählen – wie echter Pick-Flow)
         buildIds.forEach(id => {
             let u = allUpgradesData.find(x => x.id === id); if (!u) return;
@@ -1623,7 +1624,7 @@
         { id: 'helper', title: 'Helfer-Drohne', short: 'Seitliche Unterstützung', levels: ['1 Drohne alle 2.85s, 2 Schaden','2 Drohnen alle 2.7s','3 Drohnen alle 2.55s, 3 Schaden','4 Drohnen alle 2.4s','5 Drohnen alle 2.25s, 4 Schaden'], isBuild: true, action: () => { player.helpers += 1; } },
         { id: 'trap', title: 'Lichtfalle', short: 'Stationäre Bremszone', levels: ['1 Falle, 65px, 2s Dauer, verlangsamt','1 Falle, 70px, 3s Dauer','2 Fallen, 75px, 4s Dauer','2 Fallen, 80px, 5s Dauer','3 Fallen, 85px, 6s Dauer + 1 Schaden/1.5s'], isBuild: true, action: () => { player.trapLevel += 1; } },
         { id: 'boomerang', title: 'Bumerang', short: 'Fliegt hin und zurück', levels: ['1 Bumerang, 1 Schaden','1 Bumerang, schneller','2 Bumerangs schräg, 2 Schaden','2 Bumerangs, noch schneller','3 Bumerangs, maximale Abdeckung'], isBuild: true, action: () => { player.boomerangLevel = (player.boomerangLevel || 0) + 1; } },
-        { id: 'grenade', title: 'Blockgranaten', short: 'Explodierende Blöcke mit Splitterschaden', levels: ['1 Schaden + 1 Splitterschaden im Radius','Explosionsradius +15%','Explosionsradius nochmals +15%','Direkttreffer: 2 Schaden','Zwei Granaten schräg versetzt abfeuern'], isBuild: true, action: () => { player.grenadeLevel = (player.grenadeLevel || 0) + 1; } },
+        { id: 'grenade', title: 'Blockgranaten', short: 'Explodierende Blöcke mit Splitterschaden', levels: ['1 Schaden + 1 Splitterschaden, großer Radius','Explosionsradius +15%','Direkttreffer: 2 Schaden, Splitter: 2','Explosionsradius nochmals +15%','Zwei Granaten schräg + Splitter: 3'], isBuild: true, action: () => { player.grenadeLevel = (player.grenadeLevel || 0) + 1; } },
         { id: 'reactive', title: 'Reflexschild', short: 'Kurzzeitige Unverwundbarkeit', levels: ['1s unverwundbar nach Treffer (14s CD)','1.3s Unverwundbarkeit (13s CD)','1.6s Unverwundbarkeit (12s CD)','1.9s Unverwundbarkeit (11s CD)','2.2s Unverwundbarkeit (9s CD)'], isBuild: true, action: () => { player.reactiveLevel = (player.reactiveLevel||0) + 1; } },
         { id: 'blitzring', title: 'Blitzring', short: 'Elektrischer Impulsring', levels: ['Ring alle 2s, Radius 90px, 1 Schaden','Alle 1.8s, Radius 98px, 1 Schaden','Alle 1.5s, Radius 102px, 2 Schaden','Alle 1.3s, Radius 106px, 2 Schaden + Slow','Alle 1.2s, Radius 110px, 3 Schaden + Slow'], isBuild: true, action: () => { player.blitzringLevel = (player.blitzringLevel||0) + 1; } },
         { id: 'fireball', title: 'Feuerball', short: 'Brennende Kugel — entzündet Gegner (Feuer-Tick-Schaden)', levels: ['1 Kugel, 1 Schaden, Feuer: 1/s für 3s','1 Kugel, 2 Schaden, Feuer: 1/s für 4s','1 Kugel, 2 Schaden, Feuer: 2/s für 4s','1 Kugel, 2 Schaden, Feuer: 2/s für 5s','2 Kugeln schräg, 2 Schaden, Feuer: 3/s für 5s'], isBuild: true, action: () => { player.fireballLevel = (player.fireballLevel||0) + 1; } },
@@ -2580,7 +2581,7 @@
         box.style.display = 'block';
         if ((selectedAscension || 0) > ascensionUnlocked) selectedAscension = ascensionUnlocked;
         let lvl = selectedAscension || 0;
-        let mult = Math.min(1 + lvl * 0.10, 1.5).toFixed(1);
+        let mult = (1 + lvl * 0.20).toFixed(1);
         getEl('ascLabel').innerHTML = lvl === 0 ? '⛰ Meisterstufe 0 · Normal' : `⛰ Meisterstufe ${lvl} · Punkte ×${mult}`;
         getEl('ascDesc').innerHTML = lvl === 0 ? 'Normale Schwierigkeit' : ('Neu: ' + ASCENSION_LEVELS[lvl-1].desc + (lvl > 1 ? ' &nbsp;(+ alle davor)' : ''));
         // Einmaliger Erklär-Hinweis beim ersten Erscheinen
@@ -2676,7 +2677,7 @@
         } catch(e){}
     });
 
-    window.addEventListener('keydown', (e) => { if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') keys.left = true; if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') keys.right = true; });
+    window.addEventListener('keydown', (e) => { if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') keys.left = true; if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') keys.right = true; if ((e.key === 'e' || e.key === 'E') && gameState === 'PLAYING') activateAbility(); });
     window.addEventListener('keyup', (e) => { if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') keys.left = false; if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') keys.right = false; });
 
     // ==========================================
@@ -2760,6 +2761,7 @@
         let startShield = 12 + (permShieldAmts[safeUpgrades.startShield || 0] || 0) + (currentVariant.sh || 0) + _runShieldBonus + ascMods.startShieldDelta;
         if (ascMods.startShieldAbs !== null && ascMods.startShieldAbs !== undefined) startShield = ascMods.startShieldAbs; // Meisterstufe: festes Start-Schild
         if (startShield < 1) startShield = 1;
+        if (ascMods.spawnRateMult !== 1) enemySpawnRate *= ascMods.spawnRateMult;
 
         player = { 
             x: canvas.width/2 - 16, y: defenseLineY - 32, w: 32, h: 32, 
@@ -3102,7 +3104,7 @@
     function updateMuteBtnVisibility() {
         let mBtn = getEl('muteBtn');
         if (!mBtn) return;
-        let isMenu = (gameState === 'START' || gameState === 'GAMEOVER' || gameState === 'WIN');
+        let isMenu = (gameState === 'START' || gameState === 'WIN');
         mBtn.style.display = isMenu ? 'flex' : 'none';
     }
 
@@ -3231,6 +3233,8 @@
                 let targetCameraX = ((player.x + player.w/2) / canvas.width - 0.5) * 32;
                 cameraX += (targetCameraX - cameraX) * 5 * dt;
             }
+            // GAMEOVER-Freeze: Shake abklingen lassen (Game-Loop läuft nicht, nur der Draw)
+            if (gameState === 'GAMEOVER' && screenShake > 0) screenShake = Math.max(0, screenShake - dt * 1.8);
             // Draw: auf Mac Safari mit festem Intervall, sonst jeden RAF (auf 120Hz jeden 2.)
             if (player || gameState === 'START') {
                 let doDraw = true;
@@ -3645,7 +3649,7 @@
         }
 
         // Feuerball-Waffe: separate Kugel die entzündet
-        if (hasFireball && player.fireballLevel > 0) { playSound('fireball_shoot');
+        if (hasFireball && player.fireballLevel > 0) { playSound('fireball_shoot'); player.recoil = 5;
             let fbSpeed = 272; // 15% langsamer als 320
             let fbSize = 14; // 20% größer als 12
             let fbDmg = player.fireballLevel >= 2 ? 2 : 1;
@@ -3660,13 +3664,14 @@
         }
         if (hasGrenade) {
             let lvl = player.grenadeLevel || 1;
-            let baseRadius = 40;
-            let radius = baseRadius * (lvl >= 3 ? 1.15 * 1.15 : lvl >= 2 ? 1.15 : 1.0);
-            let directDmg = lvl >= 4 ? 2 : 1;
+            let baseRadius = 52;
+            let radius = baseRadius * (lvl >= 4 ? 1.15 * 1.15 : lvl >= 2 ? 1.15 : 1.0);
+            let directDmg = lvl >= 3 ? 2 : 1;
+            let splashDmg = lvl >= 5 ? 3 : lvl >= 3 ? 2 : 1;
             let makeGrenade = (offsetX, offsetAngle, delay) => {
                 let g = { x: player.x + 16 - 4 + offsetX, y: player.y, w: 8, h: 8,
                     speedX: Math.sin(offsetAngle) * 220, speedY: 420,
-                    type: 'grenade', dmg: directDmg, splashDmg: 1, splashRadius: radius,
+                    type: 'grenade', dmg: directDmg, splashDmg: splashDmg, splashRadius: radius,
                     pierceLeft: 0, bouncesLeft: 0, hitIds: [], rotation: 0 };
                 if (delay > 0) { player.delayedShotsQueue.push({ delay: delay, bullet: g }); }
                 else { bullets.push(g); }
@@ -4968,7 +4973,7 @@
             } 
             else if (e.type === 'zigzag') { e.y += currentSpeed * delta; if (!e.frozenX) { e.x = e.startX + Math.sin(e.timeAlive * 6) * 60; e.x = Math.max(0, Math.min(canvas.width - e.w, e.x)); } } 
             else if (e.type === 'splitter_mini') { e.y += currentSpeed * delta; if (!e.frozenX) { e.x += e.vx * delta; if (e.x < 0) { e.x = 0; e.vx *= -1; } if (e.x + e.w > canvas.width) { e.x = canvas.width - e.w; e.vx *= -1; } } } 
-            else { if (!e.type.includes('boss') && !e.fade) { e.y += currentSpeed * delta; if (!e.frozenX && (e.type === 'yellow' || e.type === 'lightorange')) { e.x = e.startX + Math.sin(e.timeAlive * 4) * 50; e.x = Math.max(0, Math.min(canvas.width - e.w, e.x)); } } }
+            else { if (!e.type.includes('boss') && !e.fade && !e.healerExploding) { e.y += currentSpeed * delta; if (!e.frozenX && (e.type === 'yellow' || e.type === 'lightorange')) { e.x = e.startX + Math.sin(e.timeAlive * 4) * 50; e.x = Math.max(0, Math.min(canvas.width - e.w, e.x)); } } }
             
             if (e.y + e.h > defenseLineY && e.type !== 'golden' && !e.type.includes('boss')) {
                 let dmg = 1; if (e.isMiniboss) dmg = 3; else if (e.type === 'purple' || e.type === 'zigzag') dmg = 2; else if (e.type === 'darkblue') dmg = 3; else if (e.type === 'stripe') dmg = 2; else if (e.type === 'tank') dmg = 2; else if (e.type === 'healer') dmg = 0; else if (e.type === 'buho') dmg = 1; else if (e.type.includes('boss')) dmg = 10;
@@ -6615,9 +6620,9 @@
             setTimeout(()=>{ playSound('combo'); setTimeout(()=>playSound('combo2'),150); setTimeout(()=>playSound('combo3'),300); }, 600);
         }
         // Ascension freischalten: W100 auf der aktuell höchsten Stufe geschafft → nächste Stufe frei
-        if (wave === 100 && (selectedAscension || 0) >= ascensionUnlocked && ascensionUnlocked < ASCENSION_LEVELS.length) {
-            ascensionUnlocked++; saveMetaData();
-            showAnnouncement('⛰ MEISTERSTUFE ' + ascensionUnlocked + ' FREI!', 3.5, true, false, false, 'Wähle sie beim nächsten Run für mehr Punkte!');
+        if (wave === 100 && ascensionUnlocked < ASCENSION_LEVELS.length) {
+            ascensionUnlocked = ASCENSION_LEVELS.length; saveMetaData();
+            showAnnouncement('⛰ ALLE MEISTERSTUFEN FREI!', 3.5, true, false, false, 'Wähle deine Schwierigkeit beim nächsten Run!');
         }
 
         if (isBossWave) {
@@ -7006,7 +7011,7 @@
             saveCheckpoint();
             showAnnouncement('💾 Checkpoint erreicht!', 2.5, false, false, true);
         }
-        rapidItemSpawned = false; if (tookDamageThisWave) runNoDamage = false; tookDamageThisWave = false; skillBadItemBlockedThisWave = false;
+        rapidItemSpawned = false; if (tookDamageThisWave) runNoDamage = false; tookDamageThisWave = false; skillBadItemBlockedThisWave = false; miniEventCoinsTimer = 0;
         // Wave-Clearing zurücksetzen
         waveClearing = false; waveClearingTimer = 0; waveClearAnnounced = false; waveClearDelay = 0;
         // Fähigkeit zurücksetzen + Button aktualisieren
@@ -7137,29 +7142,37 @@
         _doGameOver();
     }
     function _doGameOver() {
-        if (gameState === 'GAMEOVER') return; gameState = 'GAMEOVER'; screenShake = 0; playSound('gameover');
+        if (gameState === 'GAMEOVER') return; gameState = 'GAMEOVER';
+        // — Sofort: Freeze + dramatische Pause —
+        bgMusic.pause();
+        screenShake = 1.4; screenFlashTimer = 0.35; screenFlashRed = true;
+        playSound('gameover');
+        let pBtn = getEl('pauseBtn'); if(pBtn) pBtn.style.display = 'none';
+        hapticPulse([40, 60, 80]);
         gameStats.totalDeaths = (gameStats.totalDeaths||0) + 1; saveGameStats();
         // Ascension: Score-Multiplikator auf den End-Score anwenden
         if (ascMods && ascMods.scoreMult && ascMods.scoreMult !== 1) score = Math.floor(score * ascMods.scoreMult);
         try { localStorage.setItem('pd6_firstRunDone', '1'); } catch(e){}
-        clearLastRunInfo(); // Snapshot nicht mehr relevant – Run ist regulär beendet
-        clearCheckpoint(); // Checkpoint löschen – Run ist vorbei
-        hapticPulse([40, 60, 80]);
+        clearLastRunInfo();
+        clearCheckpoint();
         let isNewRecord = wave > highestWave;
         if (isNewRecord) hapticPulse([20, 40, 20, 40, 80]);
         if (wave > highestWave) { highestWave = wave; saveMetaData(); }
-        let pBtn = getEl('pauseBtn'); if(pBtn) pBtn.style.display = 'none'; bgMusic.pause();
-        pendingRunXP = calcRunXP(wave); // XP für Level-Screen vorberechnen (1/Welle + 3/Boss)
-        // Letzten Run (Build) fürs Lexikon merken
+        // Daten sofort sichern (bevor der Delay abläuft)
+        pendingRunXP = calcRunXP(wave);
         try {
             let _lrU = (player.acquiredUpgrades||[]).map(id => { let u=allUpgradesData.find(x=>x.id===id); return { t: u?u.title:id, l: player.upgradeLevels[id]||1 }; });
             let _lrC = (player.combos||[]).map(id => { let c=allComboDefs.find(x=>x.id===id); return c?c.name:id; });
             localStorage.setItem('pd6_lastRunBuild', JSON.stringify({ wave: wave, score: score, upgrades: _lrU, combos: _lrC }));
         } catch(e){}
-        // Münzbelohnung pro Run tatsächlich gutschreiben (wave / 5, wie angezeigt); Goldgier verdoppelt
         let runCoinReward = Math.floor(wave / 5);
         if (activeRunSkills.includes('bonusCoins')) runCoinReward *= 2;
         if (runCoinReward > 0) { globalCoins = Math.min(9999, globalCoins + runCoinReward); saveMetaData(); }
+        // — Nach kurzer Pause: Game-Over-Screen zeigen —
+        setTimeout(() => { _showGameOverScreen(runCoinReward); }, 1100);
+    }
+    function _showGameOverScreen(runCoinReward) {
+        if (gameState !== 'GAMEOVER') return;
         setUI('uiGameOver', 'flex');
         const _goTips = [
             'Probiere ein anderes Upgrade-Set!',
@@ -7174,11 +7187,9 @@
         let _tipEl = getEl('gameOverTip');
         if (_tipEl) _tipEl.textContent = _goTips[Math.floor(Math.random() * _goTips.length)];
         updateMuteBtnVisibility();
-        // Stats
+        // isNewRecord: highestWave wurde bereits auf wave gesetzt wenn Rekord
+        let isNewRecord = wave === highestWave;
         let recordText = isNewRecord ? '' : ` (Rekord: W. ${highestWave})`;
-        let closeMsg = '';
-        let activeComboList = player.combos && player.combos.length > 0 ? player.combos.map(id => { let c = allComboDefs.find(x=>x.id===id); return c ? c.name : id; }).join(', ') : '—';
-        // Upgrade-Liste (Build) als eigene Box
         let upgradeListHtml = '';
         if (player.acquiredUpgrades && player.acquiredUpgrades.length > 0) {
             let chips = '';
@@ -7188,35 +7199,29 @@
                 let lvlColor = lvl>=5?'#4caf50':lvl>=3?'#ffeb3b':'#9fb4c4';
                 chips += `<span style="color:${lvlColor};">${u.title} Lv${lvl}</span>&nbsp;&nbsp;`;
             });
-            upgradeListHtml = `<div style="margin-top:10px; padding:7px 9px; background:rgba(0,0,0,0.3); border:1px solid #1e3a52; border-radius:4px; text-align:left; font-size:8px; line-height:1.9;"><div style="color:#777; font-size:6px; letter-spacing:1px; margin-bottom:4px;">DEIN BUILD</div>${chips}</div>`;
+            upgradeListHtml = `<div style="margin-top:6px; padding:5px 9px; background:rgba(0,0,0,0.3); border:1px solid #1e3a52; border-radius:4px; text-align:left; font-size:8px; line-height:1.7;"><div style="color:#777; font-size:6px; letter-spacing:1px; margin-bottom:3px;">DEIN BUILD</div>${chips}</div>`;
         }
-        let _ascLine = (selectedAscension||0) > 0 ? `<div style="color:#ce93d8; font-size:8px; margin-bottom:10px;">⛰ Meisterstufe ${selectedAscension} · Punkte ×${ascMods.scoreMult.toFixed(1)}</div>` : '';
+        let _ascLine = (selectedAscension||0) > 0 ? `<div style="color:#ce93d8; font-size:8px; margin-bottom:4px;">⛰ Meisterstufe ${selectedAscension} · Punkte ×${ascMods.scoreMult.toFixed(1)}</div>` : '';
         getEl('gameOverStats').innerHTML =
-            (isNewRecord ? `<div style="color:#ffeb3b;font-size:12px;margin-bottom:8px;animation:pulse 0.5s infinite alternate;">🏆 NEUER REKORD! 🏆</div>` : '') +
-            // Held: Punktzahl
-            `<div style="color:#ffeb3b; font-size:18px; font-family:'Press Start 2P',cursive; line-height:1.2; margin-bottom:2px;">${fmtScore(score)}</div>` +
-            `<div style="color:#888; font-size:6px; letter-spacing:2px; margin-bottom:8px;">PUNKTE</div>` +
-            // Welle (nur einmal)
-            `<div style="color:#fff; font-size:11px; margin-bottom:${_ascLine?'4':'10'}px;">Welle ${wave}${recordText}</div>` +
+            (isNewRecord ? `<div style="color:#ffeb3b;font-size:11px;margin-bottom:5px;animation:pulse 0.5s infinite alternate;">🏆 NEUER REKORD! 🏆</div>` : '') +
+            `<div style="color:#ffeb3b; font-size:18px; font-family:'Press Start 2P',cursive; line-height:1.1; margin-bottom:1px;">${fmtScore(score)}</div>` +
+            `<div style="color:#888; font-size:6px; letter-spacing:2px; margin-bottom:4px;">PUNKTE</div>` +
+            `<div style="color:#aaa; font-size:9px; margin-bottom:${_ascLine?'3':'7'}px;">Welle <span style="color:#fff;">${wave}</span>${recordText ? `<span style="color:#666;"> ${recordText}</span>` : ''}</div>` +
             _ascLine +
-            // Stat-Box: Münzen / Kombis / XP
-            `<div style="display:flex; border:1px solid #1e3a52; border-radius:4px; overflow:hidden;">
-                <div style="flex:1; padding:6px 2px; background:rgba(0,0,0,0.3);"><div style="color:#ffd700; font-size:11px;">+${runCoinReward}</div><div style="color:#777; font-size:6px; letter-spacing:1px; margin-top:3px;">💰 MÜNZEN</div></div>
-                <div style="flex:1; padding:6px 2px; background:rgba(0,0,0,0.3); border-left:1px solid #1e3a52;"><div style="color:#ff8a65; font-size:11px;">${player.combos ? player.combos.length : 0}</div><div style="color:#777; font-size:6px; letter-spacing:1px; margin-top:3px;">💥 KOMBIS</div></div>
-                <div style="flex:1; padding:6px 2px; background:rgba(0,0,0,0.3); border-left:1px solid #1e3a52;"><div style="color:#4caf50; font-size:11px;">+${pendingRunXP}</div><div style="color:#777; font-size:6px; letter-spacing:1px; margin-top:3px;">✨ XP</div></div>
+            `<div style="display:flex; border:1px solid #1e3a52; border-radius:4px; overflow:hidden; margin-bottom:0;">
+                <div style="flex:1; padding:4px 2px; background:rgba(0,0,0,0.3);"><div style="color:#ffd700; font-size:11px;">+${runCoinReward}</div><div style="color:#777; font-size:6px; letter-spacing:1px; margin-top:2px;">💰 MÜNZEN</div></div>
+                <div style="flex:1; padding:4px 2px; background:rgba(0,0,0,0.3); border-left:1px solid #1e3a52;"><div style="color:#ff8a65; font-size:11px;">${player.combos ? player.combos.length : 0}</div><div style="color:#777; font-size:6px; letter-spacing:1px; margin-top:2px;">💥 KOMBIS</div></div>
+                <div style="flex:1; padding:4px 2px; background:rgba(0,0,0,0.3); border-left:1px solid #1e3a52;"><div style="color:#4caf50; font-size:11px;">+${pendingRunXP}</div><div style="color:#777; font-size:6px; letter-spacing:1px; margin-top:2px;">✨ XP</div></div>
             </div>` +
             upgradeListHtml;
-        // Neue Entdeckungen dieser Runde
         let discoveries = [];
         if (player.acquiredUpgrades) player.acquiredUpgrades.forEach(id => { if (!runStartSeenUpgrades.includes(id)) discoveries.push('🆕 Upgrade: ' + (allUpgradesData.find(u=>u.id===id)||{title:id}).title); });
         if (player.combos) player.combos.forEach(id => { if (!runStartCombos.includes(id)) { let c = allComboDefs.find(x=>x.id===id); if(c) discoveries.push('💥 Kombi: ' + c.name); } });
         let discEl = getEl('gameOverDiscoveries');
         if (discoveries.length > 0) { discEl.innerHTML = '<span style="color:#80deea;">Neue Entdeckungen:</span><br>' + discoveries.slice(0,4).join('<br>'); }
         else { discEl.innerHTML = ''; }
-        // Nächstes Ziel (one-more-run-Anreiz)
         let _ngEl = getEl('gameOverNextGoal');
         if (_ngEl) { try { _ngEl.innerHTML = getNextGoal(); } catch(e) { _ngEl.style.display = 'none'; } }
-        // Name + Emoji vom letzten Mal vorbefüllen (Stammspieler müssen nicht jedes Mal neu tippen)
         let _savedName = ''; let _savedEmoji = '😐';
         try { _savedName = localStorage.getItem('pd6_playerName') || ''; _savedEmoji = localStorage.getItem('pd6_playerEmoji') || '😐'; } catch(e) {}
         selectedEmoji = _savedEmoji;
@@ -7225,7 +7230,6 @@
         let _match = [..._emojiBtns].find(b => b.textContent.trim() === _savedEmoji);
         if (_match) _match.classList.add('active'); else if (_emojiBtns[5]) { _emojiBtns[5].classList.add('active'); selectedEmoji = '😐'; }
         let pN = getEl('playerName'); if(pN) pN.value = _savedName.substring(0, 9);
-        // Speichern-Button-Text zurücksetzen (könnte von letztem Run auf "Speichert..." stehen)
         let sbtn = getEl('saveBtn'); if(sbtn) sbtn.innerText = 'Speichern';
         validateName();
     }
@@ -7568,7 +7572,8 @@
         let posWeight = i < 3 ? 'bold' : 'normal';
         let waveCell  = showWave ? `<td style="${HS_TD_WAVE}">W.${s.wave||1}</td>` : '';
         let _asc = (s.build && s.build.ascension) ? s.build.ascension : 0;
-        let ascBadge = _asc > 0 ? ` <span style="color:#ce93d8; font-size:9px;" title="Meisterstufe ${_asc}">⛰${_asc}</span>` : '';
+        const _ascColors = ['','#66bb6a','#26c6da','#ffb74d','#ff7043','#ffd700'];
+        let ascBadge = _asc > 0 ? ` <span style="color:${_ascColors[_asc]||'#ce93d8'}; font-size:8px; background:rgba(0,0,0,0.35); border:1px solid ${_ascColors[_asc]||'#ce93d8'}; border-radius:2px; padding:0 3px; letter-spacing:0.5px;" title="Meisterstufe ${_asc}">⛰${_asc}</span>` : '';
         let _pr = (s.build && s.build.prestige) ? s.build.prestige : 0;
         let prBadge = _pr > 0 ? ` <span style="color:#ffd700; font-size:9px;" title="${prestigeName(_pr)}">⭐${_pr}</span>` : '';
         return `<tr style="${isLast ? '' : HS_TR_BORDER}">
