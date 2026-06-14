@@ -358,7 +358,7 @@
             <span style="font-size:7px; color:#80deea; letter-spacing:1px; opacity:0.75;">✦ EARLY ACCESS ✦</span><br>
             <span style="font-size:6px; color:#555; letter-spacing:0.5px;">Feedback? Oben links drücken! :)</span>
         </div>
-        <div class="version-text" id="versionText" onclick="_devTap()" style="cursor:default;">by Maddin 2026 - v0.549 (V5)</div>
+        <div class="version-text" id="versionText" onclick="_devTap()" style="cursor:default;">by Maddin 2026 - v0.550 (V5)</div>
     </div>
 
     <div id="uiVariantSelect" class="overlay" style="justify-content:center; padding-top:0; padding-bottom:0; overflow-y:auto; -webkit-overflow-scrolling:touch; touch-action:pan-y;">
@@ -7905,22 +7905,12 @@
             let isNew = !code;
             if (isNew) code = _csGenCode();
             let data = _csCollectData();
-            // Prüfen ob Eintrag schon existiert
-            let checkRes = await sbFetch(`saves?code=eq.${encodeURIComponent(code)}&select=id`);
-            let rows = checkRes.ok ? await checkRes.json() : [];
-            if (rows.length > 0) {
-                await sbFetch(`saves?code=eq.${encodeURIComponent(code)}`, {
-                    method: 'PATCH',
-                    headers: { 'Prefer': 'return=minimal' },
-                    body: JSON.stringify({ data: data, updated_at: new Date().toISOString() })
-                });
-            } else {
-                await sbFetch('saves', {
-                    method: 'POST',
-                    headers: { 'Prefer': 'return=minimal' },
-                    body: JSON.stringify({ code: code, data: data })
-                });
-            }
+            // Speichern über sichere RPC (Insert/Update anhand Code, kein Direktzugriff)
+            await sbFetch('rpc/cloud_save', {
+                method: 'POST',
+                headers: { 'Prefer': 'return=minimal' },
+                body: JSON.stringify({ p_code: code, p_data: data })
+            });
             _csStoreCode(code);
             if (isNew && showCodeModal) _showCloudCodeModal(code);
         } catch(e) { console.warn('[PD] cloudSaveNow error:', e); }
@@ -7962,10 +7952,10 @@
         if (code.length < 9) { if (hint) { hint.style.color = '#ef9a9a'; hint.textContent = 'Code zu kurz (Format: XXXX-XXXX)'; } return; }
         if (hint) { hint.style.color = '#aaa'; hint.textContent = 'Wird geladen...'; }
         try {
-            let res = await sbFetch(`saves?code=eq.${encodeURIComponent(code)}&select=data`);
-            let rows = res.ok ? await res.json() : [];
-            if (rows.length === 0) { if (hint) { hint.style.color = '#ef9a9a'; hint.textContent = 'Code nicht gefunden.'; } return; }
-            _csApplyData(rows[0].data);
+            let res = await sbFetch('rpc/cloud_load', { method: 'POST', body: JSON.stringify({ p_code: code }) });
+            let data = res.ok ? await res.json() : null;
+            if (!data) { if (hint) { hint.style.color = '#ef9a9a'; hint.textContent = 'Code nicht gefunden.'; } return; }
+            _csApplyData(data);
             _csStoreCode(code);
             saveMetaData();
             setUI('uiCloudSave', 'none');
@@ -7990,7 +7980,7 @@
         _cloudDeleteArmed = false;
         if (hint) { hint.style.color = '#aaa'; hint.textContent = 'Wird gelöscht...'; }
         try {
-            let res = await sbFetch(`saves?code=eq.${encodeURIComponent(code)}`, { method: 'DELETE' });
+            let res = await sbFetch('rpc/cloud_delete', { method: 'POST', body: JSON.stringify({ p_code: code }) });
             if (!res.ok) throw new Error('HTTP ' + res.status);
             _cloudCode = null;
             try { sessionStorage.removeItem('pd6_cloudCode'); } catch(e) {}
@@ -8006,10 +7996,10 @@
     // Saison-Rollover (archiviert Gewinner + resettet Scores)
     async function checkSeasonRollover() {
         try {
-            const { season } = getSeasonInfo();
-            await sbFetch('rpc/do_season_rollover', {
+            // Sichere Hülle: Server berechnet die Saison selbst, rollt nur wenn fällig
+            await sbFetch('rpc/season_rollover_safe', {
                 method: 'POST',
-                body: JSON.stringify({ new_season: season })
+                body: JSON.stringify({})
             });
         } catch(e) {}
     }
