@@ -358,7 +358,7 @@
             <span style="font-size:7px; color:#80deea; letter-spacing:1px; opacity:0.75;">✦ EARLY ACCESS ✦</span><br>
             <span style="font-size:6px; color:#555; letter-spacing:0.5px;">Feedback? Oben links drücken! :)</span>
         </div>
-        <div class="version-text" id="versionText" onclick="_devTap()" style="cursor:default;">by Maddin 2026 - v0.559 (V5)</div>
+        <div class="version-text" id="versionText" onclick="_devTap()" style="cursor:default;">by Maddin 2026 - v0.561 (V5)</div>
     </div>
 
     <div id="uiVariantSelect" class="overlay" style="justify-content:center; padding-top:0; padding-bottom:0; overflow-y:auto; -webkit-overflow-scrolling:touch; touch-action:pan-y;">
@@ -413,8 +413,9 @@
 
     <div id="uiHighscoreFull" class="overlay" style="justify-content: flex-start; padding-top: 24px; padding-bottom: 12px;">
         <div class="pd-tabs" style="margin-top:0;">
-            <button class="pd-tab active">🏆 TOP 15</button>
-            <button class="pd-tab" onclick="openHighscores('ruhm')">🏅 EWIGER RUHM</button>
+            <button id="hsTabNormal" class="pd-tab active" onclick="switchHsTab('normal')">TOP 15</button>
+            <button id="hsTabMeister" class="pd-tab" onclick="switchHsTab('meister')" style="display:none;">MEISTER</button>
+            <button id="hsTabRuhm" class="pd-tab" onclick="switchHsTab('ruhm')">EWIGER RUHM</button>
         </div>
         <div id="seasonInfoLabel" style="background:rgba(0,120,140,0.25); border:1px solid rgba(128,222,234,0.35); border-radius:3px; padding:6px 14px; margin-bottom:12px; color:#80deea; font-size:8px; letter-spacing:1px; text-align:center;">Wird geladen...</div>
         <ul id="fullHighscoreList" class="full-hs-list"><li>Wird geladen...</li></ul>
@@ -1106,6 +1107,9 @@
     let lastSpawnType = '';
     let recentSpawns = [];
     let globalHighscoreData = [];
+    let globalHighscoreNormal = [];
+    let globalHighscoreMeister = [];
+    let currentHsTab = 'normal';
     let keys = { left: false, right: false }; 
     
     let bgPattern, grassPattern; 
@@ -7438,8 +7442,68 @@
         }
     }
     function openHighscores(tab) {
-        if (tab === 'ruhm') { setUI('uiHighscoreFull', 'none'); setUI('uiHallOfFame', 'flex'); loadHallOfFame(); }
-        else { setUI('uiHallOfFame', 'none'); setUI('uiHighscoreFull', 'flex'); renderHighscores(15); }
+        setUI('uiHallOfFame', 'none'); setUI('uiHighscoreFull', 'flex');
+        let meisterBtn = getEl('hsTabMeister');
+        if (meisterBtn) meisterBtn.style.display = ascensionUnlocked > 0 ? '' : 'none';
+        switchHsTab(tab === 'ruhm' ? 'ruhm' : (tab === 'meister' && ascensionUnlocked > 0 ? 'meister' : 'normal'));
+    }
+    function switchHsTab(tab) {
+        currentHsTab = tab;
+        ['Normal','Meister','Ruhm'].forEach(t => { let b = getEl('hsTab'+t); if (b) b.classList.toggle('active', t.toLowerCase() === tab); });
+        let sl = getEl('seasonInfoLabel');
+        if (tab === 'ruhm') {
+            if (sl) { sl.style.background='rgba(80,60,0,0.35)'; sl.style.borderColor='rgba(255,215,0,0.4)'; sl.style.color='#ffd700'; sl.textContent='Saison-Sieger aller Zeiten'; }
+            _renderHofInFullList();
+        } else {
+            if (sl) { sl.style.background='rgba(0,120,140,0.25)'; sl.style.borderColor='rgba(128,222,234,0.35)'; sl.style.color='#80deea'; sl.textContent=`Saison ${globalSeasonInfo.season} · noch ${globalSeasonInfo.daysLeft} Tag${globalSeasonInfo.daysLeft===1?'':'e'}`; }
+            renderFullHighscoreList(tab);
+        }
+    }
+    function renderFullHighscoreList(tab) {
+        const fullList = getEl('fullHighscoreList'); if (!fullList) return;
+        const data = tab === 'meister' ? globalHighscoreMeister : globalHighscoreNormal;
+        if (!data || data.length === 0) {
+            fullList.innerHTML = `<li style="color:#aaa; list-style:none; text-align:center; padding:24px 8px;">${tab==='meister'?'Noch keine Meister-Runs ⛰':'Noch keine Einträge 👾'}</li>`; return;
+        }
+        let top15 = data.slice(0, 15);
+        let rows = top15.map((s, i) => _hsRow(s, i)).join('');
+        if (tab === 'normal') {
+            let savedName = ''; try { savedName = localStorage.getItem('pd6_playerName') || ''; } catch(e) {}
+            if (savedName && personalBest > 0) {
+                let nameUpper = savedName.toUpperCase();
+                let alreadyVisible = top15.some(e => e.name === nameUpper);
+                let savedEmoji = '😐'; try { savedEmoji = localStorage.getItem('pd6_playerEmoji') || '😐'; } catch(e) {}
+                if (!alreadyVisible) {
+                    rows += `<tr><td colspan="5" style="padding:14px 0 4px; text-align:center; border-top:2px solid #1e3a52;"><span style="color:#80deea; font-size:13px; font-family:'Press Start 2P',monospace; letter-spacing:1px;">— Deine beste Runde —</span></td></tr>
+                    <tr><td style="${HS_TD_RANK} color:#888;">—</td><td style="${HS_TD_EMOJI}">${savedEmoji}</td><td style="${HS_TD_NAME} color:#ccc;">${savedName}</td><td style="${HS_TD_WAVE}">W.${highestWave}</td><td style="${HS_TD_SCORE} color:#ffeb3b;">${fmtScore(personalBest)}<span style="color:#00bcd4;font-size:9px;position:relative;top:-1px;"> ◆</span></td></tr>`;
+                }
+            }
+        }
+        fullList.innerHTML = _hsTable(rows);
+    }
+    async function _renderHofInFullList() {
+        const fullList = getEl('fullHighscoreList'); if (!fullList) return;
+        fullList.innerHTML = '<li style="color:#aaa; list-style:none; text-align:center; padding:12px;">Wird geladen...</li>';
+        try {
+            const response = await sbFetch('hall_of_fame?order=season.desc&limit=30');
+            if (!response.ok) throw new Error();
+            let hof = await response.json();
+            if (!Array.isArray(hof) || hof.length === 0) { fullList.innerHTML = '<li style="color:#aaa; list-style:none; text-align:center; padding:18px;">Noch keine Einträge — Saison muss erst enden.</li>'; return; }
+            // Saisons gruppieren
+            let bySeasonHtml = '';
+            let lastSeason = -1;
+            hof.forEach((s, i) => {
+                if (s.season !== lastSeason) { if (lastSeason !== -1) bySeasonHtml += '</tbody></table>'; bySeasonHtml += `<div style="color:#ffd700; font-size:8px; letter-spacing:1px; margin:${lastSeason===-1?'0':'10px'} 0 4px; padding-bottom:4px; border-bottom:1px solid rgba(255,215,0,0.3);">Saison ${s.season}</div><table style="width:100%; border-collapse:collapse;"><tbody>`; lastSeason = s.season; }
+                let _asc = (s.build && s.build.ascension) ? s.build.ascension : 0;
+                const _ascColors = ['','#66bb6a','#26c6da','#ffb74d','#ff7043','#ffd700'];
+                let ascBadge = _asc > 0 ? ` <span style="color:${_ascColors[_asc]||'#ce93d8'}; font-size:8px; border:1px solid ${_ascColors[_asc]||'#ce93d8'}; border-radius:2px; padding:0 3px;">⛰${_asc}</span>` : '';
+                let _pr = (s.build && s.build.prestige) ? s.build.prestige : 0;
+                let prBadge = _pr > 0 ? ` <span style="color:#ffd700; font-size:8px;">⭐${_pr}</span>` : '';
+                bySeasonHtml += `<tr style="${i > 0 ? 'border-top:1px solid rgba(255,215,0,0.12);' : ''}"><td style="${HS_TD_RANK} color:#ffd700;">🥇</td><td style="${HS_TD_EMOJI}">${s.emoji||'😐'}</td><td style="${HS_TD_NAME} color:#fff;">${s.name}${prBadge}${ascBadge}</td><td style="${HS_TD_WAVE}">W.${s.wave||1}</td><td style="${HS_TD_SCORE} color:#ffeb3b;">${fmtScore(s.score)}</td></tr>`;
+            });
+            if (lastSeason !== -1) bySeasonHtml += '</tbody></table>';
+            fullList.innerHTML = bySeasonHtml;
+        } catch(e) { fullList.innerHTML = '<li style="color:#aaa; list-style:none; text-align:center; padding:12px;">Fehler beim Laden.</li>'; }
     }
 
     // Gesperrter Button angetippt: kurz schütteln + Unlock-Hinweis aufleuchten lassen
@@ -7592,59 +7656,13 @@
     let globalSeasonInfo = { season: 1, daysLeft: 14 };
 
     function renderHighscores(limit = 5) {
-        const list = getEl('highscoreList'); const fullList = getEl('fullHighscoreList');
-        if (list) list.innerHTML = ''; if (fullList) fullList.innerHTML = '';
-        // Saison-Info im Top-15-Header aktualisieren
-        const seasonLabel = getEl('seasonInfoLabel');
-        if (seasonLabel) {
-            seasonLabel.textContent = `Saison ${globalSeasonInfo.season} · noch ${globalSeasonInfo.daysLeft} Tag${globalSeasonInfo.daysLeft === 1 ? '' : 'e'}`;
-        }
+        const list = getEl('highscoreList');
         if (!globalHighscoreData || globalHighscoreData.length === 0) {
-            if (list) list.innerHTML = '<li style="color:#aaa;">Noch keine Einträge 👾</li>';
-            if (fullList) fullList.innerHTML = '<li style="color:#aaa;">Noch keine Einträge 👾</li>'; return;
+            if (list) list.innerHTML = '<li style="color:#aaa;">Noch keine Einträge 👾</li>'; return;
         }
         if (list) {
             let top3 = globalHighscoreData.slice(0, 3);
             list.innerHTML = _hsTable(top3.map((s, i) => _hsRow(s, i, false, i === top3.length - 1)).join(''));
-        }
-        if (fullList) {
-            let top15 = globalHighscoreData.slice(0, 15);
-            let rows = top15.map((s, i) => _hsRow(s, i)).join('');
-            let savedName = ''; try { savedName = localStorage.getItem('pd6_playerName') || ''; } catch(e) {}
-            if (savedName && personalBest > 0) {
-                let nameUpper = savedName.toUpperCase();
-                let alreadyVisible = top15.some(e => e.name === nameUpper); // versteckt "Deine beste Runde" wenn Name schon in Top15
-                let savedEmoji = '😐'; try { savedEmoji = localStorage.getItem('pd6_playerEmoji') || '😐'; } catch(e) {}
-                if (!alreadyVisible) {
-                    rows += `<tr><td colspan="5" style="padding:14px 0 4px; text-align:center; border-top:2px solid #1e3a52;">
-                        <span style="color:#80deea; font-size:13px; font-family:'Press Start 2P',monospace; letter-spacing:1px;">— Deine beste Runde —</span>
-                    </td></tr>
-                    <tr>
-                        <td style="${HS_TD_RANK} color:#888;">—</td>
-                        <td style="${HS_TD_EMOJI}">${savedEmoji}</td>
-                        <td style="${HS_TD_NAME} color:#ccc;">${savedName}</td>
-                        <td style="${HS_TD_WAVE}">W.${highestWave}</td>
-                        <td style="${HS_TD_SCORE} color:#ffeb3b;">${fmtScore(personalBest)}<span style="color:#00bcd4;font-size:9px;position:relative;top:-1px;"> ◆</span></td>
-                    </tr>`;
-                } else {
-                    // Bereits in Top 15 sichtbar → letzten Run anzeigen
-                    let lastRun = null;
-                    try { let lr = localStorage.getItem('pd6_lastRun'); if (lr) lastRun = JSON.parse(lr); } catch(e) {}
-                    if (lastRun && lastRun.score > 0) {
-                        rows += `<tr><td colspan="5" style="padding:6px 0 2px; text-align:center; border-top:2px solid #1e3a52;">
-                            <span style="color:#80deea; font-size:8px; font-family:'Press Start 2P',monospace; letter-spacing:0.5px;">Dein letzter Run</span>
-                        </td></tr>
-                        <tr>
-                            <td style="${HS_TD_RANK} color:#888;">—</td>
-                            <td style="${HS_TD_EMOJI}">${savedEmoji}</td>
-                            <td style="${HS_TD_NAME} color:#ccc;">${savedName}</td>
-                            <td style="${HS_TD_WAVE}">W.${lastRun.wave}</td>
-                            <td style="${HS_TD_SCORE} color:#aaa;">${fmtScore(lastRun.score)}</td>
-                        </tr>`;
-                    }
-                }
-            }
-            fullList.innerHTML = _hsTable(rows);
         }
     }
 
@@ -7653,9 +7671,13 @@
             await checkSeasonRollover();
             const { season, daysLeft } = getSeasonInfo();
             globalSeasonInfo = { season, daysLeft };
-            const response = await sbFetch(`highscores?season=eq.${season}&order=score.desc&limit=15`);
+            const response = await sbFetch(`highscores?season=eq.${season}&order=score.desc&limit=50`);
             if (!response.ok) throw new Error('HTTP Fehler');
-            globalHighscoreData = await response.json();
+            const allData = await response.json();
+            globalHighscoreData = allData;
+            const _getAsc = s => (s.build && s.build.ascension) ? Number(s.build.ascension) : 0;
+            globalHighscoreNormal = allData.filter(s => _getAsc(s) === 0);
+            globalHighscoreMeister = allData.filter(s => _getAsc(s) > 0);
             renderHighscores(5);
         } catch(error) {
             getEl('highscoreList').innerHTML = '<li style="color:#aaa;">Noch keine Einträge 👾</li>';
